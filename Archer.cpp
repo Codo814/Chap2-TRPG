@@ -2,7 +2,7 @@
 
 Archer::Archer(string name, int hp, int mp, int power, int defence)
     : Player(name, hp, mp, power, defence) {
-    job = "마법사";
+    job = "궁수";
     this->defence += 30;
 }
 
