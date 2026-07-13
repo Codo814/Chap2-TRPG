@@ -1,0 +1,11 @@
+#include "Archer.h"
+
+Archer::Archer(string name, int hp, int mp, int power, int defence)
+    : Player(name, hp, mp, power, defence) {
+    job = "±Ã¼ö";
+    this->defence += 30;
+}
+
+void Archer::attack() {
+    cout << "- È­»ìÀ» ½ð´Ù!" << endl;
+}
