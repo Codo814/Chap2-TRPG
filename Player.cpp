@@ -1,4 +1,4 @@
-#include "Player.h"
+ï»¿#include "Player.h"
 
 Player::Player(string name, int hp, int mp, int power, int defence) {
     this->name = name;
@@ -27,7 +27,7 @@ int Player::getPower() {
 
 void Player::printPlayerStatus() {
     cout << "------------------------------------" << endl;
-    cout << "´Ð³×ÀÓ: " << name << " | Á÷¾÷: " << job << " | Lv." << level << endl;
-    cout << "HP: " << hp << " | MP: " << mp << " | °ø°Ý·Â: " << power << " | ¹æ¾î·Â: " << defence << endl;
+    cout << "ë‹‰ë„¤ìž„: " << name << " | ì§ì—…: " << job << " | Lv." << level << endl;
+    cout << "HP: " << hp << " | MP: " << mp << " | ê³µê²©ë ¥: " << power << " | ë°©ì–´ë ¥: " << defence << endl;
     cout << "------------------------------------" << endl;
 }

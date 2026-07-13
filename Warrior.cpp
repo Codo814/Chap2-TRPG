@@ -1,11 +1,12 @@
-#include "Warrior.h"
+ï»¿#include "Warrior.h"
 
 Warrior::Warrior(string name, int hp, int mp, int power, int defence)
     : Player(name, hp, mp, power, defence) {
-    job = "Àü»ç";
+    job = "ì „ì‚¬";
     this->hp += 30;
 }
 
 void Warrior::attack() {
-    cout << "- °ËÀ» ÈÖµÎ¸¥´Ù!" << endl;
+    cout << job << "ë¡œ ì „ì§í•˜ì˜€ìŠµë‹ˆë‹¤. (HP +30)" << endl;
+    cout << "- ê²€ì„ íœ˜ë‘ë¥¸ë‹¤!" << endl;
 }

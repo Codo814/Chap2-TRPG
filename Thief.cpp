@@ -1,11 +1,12 @@
-#include "Thief.h"
+﻿#include "Thief.h"
 
 Thief::Thief(string name, int hp, int mp, int power, int defence)
     : Player(name, hp, mp, power, defence) {
-    job = "����";
+    job = "도적";
     this->power += 30;
 }
 
 void Thief::attack() {
-    cout << "- ���!" << endl;
+    cout << job << "으로 전직하였습니다. (공격력 +30)" << endl;
+    cout << "- 찌르기!" << endl;
 }

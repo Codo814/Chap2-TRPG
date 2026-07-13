@@ -1,4 +1,6 @@
 ﻿#include <iostream>
+#include <string>
+#include <windows.h>
 #include "Warrior.h"
 #include "Mage.h"
 #include "Thief.h"
@@ -6,14 +8,154 @@
 
 using namespace std;
 
-void PrintCharacter(string name, int stat[])
+const int STAT_SIZE = 4;
+const int HP = 0;
+const int MP = 1;
+const int POWER = 2;
+const int DEFENCE = 3;
+
+void PrintCharacter(const string& name, int stat[])
 {
     cout << endl;
     cout << name << " 의 능력치" << endl;
     cout << "===========================================" << endl;
-    cout << "체력 : " << stat[0] << "    마나 : " << stat[1] << endl;
-    cout << "공격력 : " << stat[2] << "    방어력 : " << stat[3] << endl;
+    cout << "체력 : " << stat[HP] << "    마나 : " << stat[MP] << endl;
+    cout << "공격력 : " << stat[POWER] << "    방어력 : " << stat[DEFENCE] << endl;
     cout << "===========================================" << endl;
+}
+
+void PrintTitle()
+{
+    cout << "===========================================" << endl;
+    cout << "[던전 탈출 텍스트 RPG]" << endl;
+    cout << "===========================================" << endl;
+}
+
+void InputStatPair(const string& inputMessage, const string& errorMessage, int& firstStat, int& secondStat)
+{
+    while (true)
+    {
+        cout << inputMessage;
+        cin >> firstStat >> secondStat;
+
+        if (firstStat >= 50 && secondStat >= 50)
+        {
+            break;
+        }
+
+        cout << errorMessage << endl;
+    }
+}
+
+void InputCharacter(string& name, int stat[])
+{
+    PrintTitle();
+
+    cout << "캐릭터 이름을 적어주세요. : ";
+    cin >> name;
+
+    InputStatPair(
+        "체력과 마나를 적어주세요. : ",
+        "체력이나 마나값이 너무 작습니다. 다시 입력해주세요.",
+        stat[HP],
+        stat[MP]
+    );
+
+    InputStatPair(
+        "공격력과 방어력을 적어주세요. : ",
+        "공격력이나 방어력이 너무 작습니다. 다시 입력해주세요.",
+        stat[POWER],
+        stat[DEFENCE]
+    );
+}
+
+void UsePotion(int& stat, int& potionCount, const string& statName, const string& potionName)
+{
+    if (potionCount > 0)
+    {
+        int beforeStat = stat;
+        stat += 20;
+        potionCount--;
+
+        cout << endl << endl << "* " << statName << "가 20 증가했습니다. ("
+            << beforeStat << " -> " << stat << ") "
+            << "(" << potionName << " 포션 차감 : 남은 포션 " << potionCount << "개)" << endl;
+    }
+    else
+    {
+        cout << endl << endl << potionName << " 포션이 부족합니다." << endl;
+    }
+}
+
+void DoubleStat(int& stat, const string& statName)
+{
+    int beforeStat = stat;
+    stat *= 2;
+
+    cout << endl << endl << "* " << statName << "이 2배 증가했습니다. ("
+        << statName << " : " << beforeStat << " -> " << stat << ")" << endl;
+}
+
+void PrintUpgradeMenu()
+{
+    cout << "============================================" << endl;
+    cout << "< 캐릭터 강화 >" << endl;
+    cout << "1. HP UP    2. MP UP    3. 공격력 2배" << endl;
+    cout << "4. 방어력 2배  5. 현재 능력치  0. 게임 시작" << endl;
+    cout << "============================================" << endl;
+    cout << "번호를 선택해주세요: ";
+}
+
+void RunUpgradeMenu(const string& name, int stat[])
+{
+    int hpPotion = 5;
+    int mpPotion = 5;
+    bool isGameStart = false;
+
+    cout << endl << endl << "* HP 포션 5개, MP 포션 5개가 기본 지급되었습니다." << endl;
+
+    while (!isGameStart)
+    {
+        int choice;
+        PrintUpgradeMenu();
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            UsePotion(stat[HP], hpPotion, "HP", "HP");
+            break;
+
+        case 2:
+            UsePotion(stat[MP], mpPotion, "MP", "MP");
+            break;
+
+        case 3:
+            DoubleStat(stat[POWER], "공격력");
+            break;
+
+        case 4:
+            DoubleStat(stat[DEFENCE], "방어력");
+            break;
+
+        case 5:
+            cout << endl << endl;
+            PrintCharacter(name, stat);
+            cout << endl;
+            break;
+
+        case 0:
+            cout << endl << endl << "============================================" << endl;
+            cout << "이제 던전 탈출 게임을 시작합니다!" << endl;
+            cout << "============================================" << endl;
+            isGameStart = true;
+            break;
+
+        default:
+            cout << "잘못된 번호입니다. 다시 선택해주세요." << endl;
+            break;
+        }
+    }
 }
 
 class Monster {
@@ -73,135 +215,8 @@ public:
     }
 };
 
-int main()
+Player* CreatePlayerByJob(const string& name, int stat[])
 {
-    string name;
-    const int SIZE = 4;
-    int stat[SIZE];
-    // stat[0] = 체력
-    // stat[1] = 마나
-    // stat[2] = 공격력
-    // stat[3] = 방어력
-
-    cout << "===========================================" << endl;
-    cout << "[던전 탈출 텍스트 RPG]" << endl;
-    cout << "===========================================" << endl;
-    cout << "캐릭터 이름을 적어주세요. : ";
-    cin >> name;
-
-    while (true)
-    {
-        cout << "체력과 마나를 적어주세요. : ";
-        cin >> stat[0] >> stat[1];
-
-        if (stat[0] >= 50 && stat[1] >= 50)
-        {
-            break;
-        }
-
-        cout << "체력이나 마나값이 너무 작습니다. 다시 입력해주세요." << endl;
-    }
-
-    while (true)
-    {
-        cout << "공격력과 방어력을 적어주세요. : ";
-        cin >> stat[2] >> stat[3];
-
-        if (stat[2] >= 50 && stat[3] >= 50)
-        {
-            break;
-        }
-
-        cout << "공격력이나 방어력이 너무 작습니다. 다시 입력해주세요." << endl;
-    }
-
-    PrintCharacter(name, stat);
-
-    int hpPotion = 5;
-    int mpPotion = 5;
-    bool isGameStart = false;
-    int choice;
-
-    cout << endl << endl << "* HP 포션 5개, MP 포션 5개가 기본 지급되었습니다." << endl;
-
-    while (!isGameStart)
-    {
-        cout << "============================================" << endl;
-        cout << "< 캐릭터 강화 >" << endl;
-        cout << "1. HP UP    2. MP UP    3. 공격력 2배" << endl;
-        cout << "4. 방어력 2배  5. 현재 능력치  0. 게임 시작" << endl;
-        cout << "============================================" << endl;
-        cout << "번호를 선택해주세요: ";
-        cin >> choice;
-
-        switch (choice)
-        {
-        case 1:
-            if (hpPotion > 0)
-            {
-                int beforeHP = stat[0];
-                stat[0] += 20;
-                hpPotion--;
-                cout << endl << endl << "* HP가 20 증가했습니다. (" << beforeHP << " -> " << stat[0] << ") "
-                    << "(HP 포션 차감 : 남은 포션 " << hpPotion << "개)" << endl;
-            }
-            else
-            {
-                cout << endl << endl << "HP 포션이 부족합니다." << endl;
-            }
-            break;
-
-        case 2:
-            if (mpPotion > 0)
-            {
-                int beforeMP = stat[1];
-                stat[1] += 20;
-                mpPotion--;
-                cout << endl << endl << "* MP가 20 증가했습니다. (" << beforeMP << " -> " << stat[1] << ") "
-                    << "(MP 포션 차감 : 남은 포션 " << mpPotion << "개)" << endl;
-            }
-            else
-            {
-                cout << endl << endl << "MP 포션이 부족합니다." << endl;
-            }
-            break;
-
-        case 3:
-        {
-            int beforeATK = stat[2];
-            stat[2] *= 2;
-            cout << endl << endl << "* 공격력이 2배 증가했습니다. (공격력 : " << beforeATK << " -> " << stat[2] << ")" << endl;
-            break;
-        }
-
-        case 4:
-        {
-            int beforeDEF = stat[3];
-            stat[3] *= 2;
-            cout << endl << endl << "* 방어력이 2배 증가했습니다. (방어력 : " << beforeDEF << " -> " << stat[3] << ")" << endl;
-            break;
-        }
-
-        case 5:
-            cout << endl << endl;
-            PrintCharacter(name, stat);
-            cout << endl;
-            break;
-
-        case 0:
-            cout << endl << endl << "============================================" << endl;
-            cout << "이제 던전 탈출 게임을 시작합니다!" << endl;
-            cout << "============================================" << endl;
-            isGameStart = true;
-            break;
-
-        default:
-            cout << "잘못된 번호입니다. 다시 선택해주세요." << endl;
-            break;
-        }
-    }
-
-    Player* player = nullptr;
     int jobChoice;
 
     cout << "< 전직 시스템 >" << endl;
@@ -213,59 +228,86 @@ int main()
     switch (jobChoice)
     {
     case 1:
-        player = new Warrior(name, stat[0], stat[1], stat[2], stat[3]);
-        break;
+        return new Warrior(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
 
     case 2:
-        player = new Mage(name, stat[0], stat[1], stat[2], stat[3]);
-        break;
+        return new Mage(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
 
     case 3:
-        player = new Thief(name, stat[0], stat[1], stat[2], stat[3]);
-        break;
+        return new Thief(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
 
     case 4:
-        player = new Archer(name, stat[0], stat[1], stat[2], stat[3]);
-        break;
+        return new Archer(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
 
     default:
         cout << "잘못된 직업 선택입니다." << endl;
-        break;
+        return nullptr;
     }
+}
+
+int CalculateDamage(int attackPower, int defence)
+{
+    int damage = attackPower - defence;
+
+    if (damage <= 0)
+    {
+        damage = 1;
+    }
+
+    return damage;
+}
+
+void BattleSlime(Player* player)
+{
+    Slime slime;
+
+    while (player->getHP() > 0 && slime.getHP() > 0) {
+        int damage = CalculateDamage(player->getPower(), slime.getDefence());
+        int currentSlimeHP = slime.getHP();
+        slime.setHP(currentSlimeHP - damage);
+
+        cout << "플레이어가 " << slime.getName() << "을(를) 공격!" << endl;
+        cout << slime.getName() << "은(는) " << damage << "의 데미지를 입었다!" << endl;
+        cout << slime.getName() << " 남은 HP: " << slime.getHP() << endl;
+
+        if (slime.getHP() <= 0) {
+            cout << slime.getName() << "을(를) 처치했습니다." << endl;
+            break;
+        }
+
+        slime.attack(player);
+        cout << "플레이어 남은 HP: " << player->getHP() << endl;
+
+        if (player->getHP() <= 0) {
+            cout << "플레이어가 쓰러졌습니다." << endl;
+            break;
+        }
+    }
+}
+
+int main()
+{
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
+    string name;
+    int stat[STAT_SIZE];
+    // stat[HP] = 체력
+    // stat[MP] = 마나
+    // stat[POWER] = 공격력
+    // stat[DEFENCE] = 방어력
+
+    InputCharacter(name, stat);
+    PrintCharacter(name, stat);
+    RunUpgradeMenu(name, stat);
+
+    Player* player = CreatePlayerByJob(name, stat);
 
     if (player != nullptr)
     {
         player->attack();
         player->printPlayerStatus();
-
-        Slime slime;
-        while (player->getHP() > 0 && slime.getHP() > 0) {
-            int damage = player->getPower() - slime.getDefence();
-
-            if (damage <= 0) {
-                damage = 1;
-            }
-
-            int currentSlimeHP = slime.getHP();
-            slime.setHP(currentSlimeHP - damage);
-
-            cout << "플레이어가 " << slime.getName() << "을(를) 공격!" << endl;
-            cout << slime.getName() << "은(는) " << damage << "의 데미지를 입었다!" << endl;
-            cout << slime.getName() << " 남은 HP: " << slime.getHP() << endl;
-
-            if (slime.getHP() <= 0) {
-                cout << slime.getName() << "을(를) 처치했습니다." << endl;
-                break;
-            }
-
-            slime.attack(player);
-            cout << "플레이어 남은 HP: " << player->getHP() << endl;
-
-            if (player->getHP() <= 0) {
-                cout << "플레이어가 쓰러졌습니다." << endl;
-                break;
-            }
-        }
+        BattleSlime(player);
     }
 
     delete player;

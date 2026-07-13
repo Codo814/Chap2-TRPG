@@ -1,11 +1,12 @@
-#include "Mage.h"
+ï»¿#include "Mage.h"
 
 Mage::Mage(string name, int hp, int mp, int power, int defence)
     : Player(name, hp, mp, power, defence) {
-    job = "¸¶¹ý»ç";
+    job = "ë§ˆë²•ì‚¬";
     this->mp += 30;
 }
 
 void Mage::attack() {
-    cout << "- ÆÄÀÌ¾îº¼À» ¹ß»çÇÑ´Ù!" << endl;
+    cout << job << "ë¡œ ì „ì§í•˜ì˜€ìŠµë‹ˆë‹¤. (MP +30)" << endl;
+    cout << "- íŒŒì´ì–´ë³¼ì„ ë°œì‚¬í•œë‹¤!" << endl;
 }
