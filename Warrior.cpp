@@ -2,10 +2,10 @@
 
 Warrior::Warrior(string name, int hp, int mp, int power, int defence)
     : Player(name, hp, mp, power, defence) {
-    job = "Àü»ç";
+    job = "ì „ì‚¬";
     this->hp += 30;
 }
 
 void Warrior::attack() {
-    cout << "- °ËÀ» ÈÖµÎ¸¥´Ù!" << endl;
+    cout << "- ê²€ íœ˜ë‘ë¥´ê¸°!" << endl;
 }
