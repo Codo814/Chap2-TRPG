@@ -2,10 +2,10 @@
 
 Archer::Archer(string name, int hp, int mp, int power, int defence)
     : Player(name, hp, mp, power, defence) {
-    job = "±Ã¼ö";
+    job = "ë§ˆë²•ì‚¬";
     this->defence += 30;
 }
 
 void Archer::attack() {
-    cout << "- È­»ìÀ» ½ð´Ù!" << endl;
+    cout << "- ÃˆÂ­Â»Ã¬Ã€Â» Â½Ã°Â´Ã™!" << endl;
 }
