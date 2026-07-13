@@ -7,6 +7,10 @@ Archer::Archer(string name, int hp, int mp, int power, int defence)
 }
 
 void Archer::attack() {
+<<<<<<< HEAD
     cout << job << "로 전직하였습니다. (방어력 +30)" << endl;
     cout << "- 화살을 쏜다!" << endl;
+=======
+    cout << "-활 쏘기!" << endl;
+>>>>>>> 702c9cd273f584e7ba18c1b3130ad297812baaef
 }
