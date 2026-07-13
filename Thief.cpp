@@ -2,10 +2,10 @@
 
 Thief::Thief(string name, int hp, int mp, int power, int defence)
     : Player(name, hp, mp, power, defence) {
-    job = "µµÀû";
+    job = "ë„ì ";
     this->power += 30;
 }
 
 void Thief::attack() {
-    cout << "- Âî¸£±â!" << endl;
+    cout << "- ì°Œë¥´ê¸°" << endl;
 }
