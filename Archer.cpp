@@ -7,5 +7,5 @@ Archer::Archer(string name, int hp, int mp, int power, int defence)
 }
 
 void Archer::attack() {
-    cout << "- È­»ìÀ» ½ð´Ù!" << endl;
+    cout << "-활 쏘기!" << endl;
 }
