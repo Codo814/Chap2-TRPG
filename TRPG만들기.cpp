@@ -1,6 +1,10 @@
 ﻿#include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include <string>
 #include <windows.h>
+#include <vector>
+#include <limits>
 #include "Warrior.h"
 #include "Mage.h"
 #include "Thief.h"
@@ -37,7 +41,14 @@ void InputStatPair(const string& inputMessage, const string& errorMessage, int& 
     {
         cout << inputMessage;
         cin >> firstStat >> secondStat;
+        if (cin.fail())
+        {
+            cin.clear();
+            cin.ignore(10000, '\n');
 
+            cout << "숫자만 입력해주세요." << endl;
+            continue;
+        }
         if (firstStat >= 50 && secondStat >= 50)
         {
             break;
@@ -158,6 +169,15 @@ void RunUpgradeMenu(const string& name, int stat[])
     }
 }
 
+struct Item
+{
+    string name;
+    int price;
+    void PrintInfo() const {
+        cout << name << "(" << price << "G)" << endl;
+    }
+};
+
 class Monster {
 protected:
     string name;
@@ -206,12 +226,22 @@ public:
         cout << name << "이(가) 플레이어를 공격!" << endl;
         cout << "플레이어는 " << damage << "의 데미지를 입었다!" << endl;
     }
+    Item getDropItem() {
+        return Item{ dropItemName, dropItemPrice };
+    }
 };
 
 class Slime : public Monster {
 public:
     Slime()
         : Monster("슬라임", 30, 20, 10, "물컹물컹한 액체", 30) {
+    }
+};
+
+class Goblin : public Monster {
+public:
+    Goblin()
+        : Monster("고블린", 50, 30, 15, "고블린의 뼈", 50) {
     }
 };
 
@@ -257,28 +287,52 @@ int CalculateDamage(int attackPower, int defence)
     return damage;
 }
 
-void BattleSlime(Player* player)
+void BattleRandomMonster(Player* player, vector<Item>& inventory)
 {
     Slime slime;
+    Goblin goblin;
 
-    while (player->getHP() > 0 && slime.getHP() > 0) {
-        int damage = CalculateDamage(player->getPower(), slime.getDefence());
-        int currentSlimeHP = slime.getHP();
-        slime.setHP(currentSlimeHP - damage);
+    Monster* monster = nullptr;
 
-        cout << "플레이어가 " << slime.getName() << "을(를) 공격!" << endl;
-        cout << slime.getName() << "은(는) " << damage << "의 데미지를 입었다!" << endl;
-        cout << slime.getName() << " 남은 HP: " << slime.getHP() << endl;
+    int randomMonster = rand() % 2;
 
-        if (slime.getHP() <= 0) {
-            cout << slime.getName() << "을(를) 처치했습니다." << endl;
+    if (randomMonster == 0)
+    {
+        monster = &slime;
+    }
+    else
+    {
+        monster = &goblin;
+    }
+
+    cout <<endl<<endl <<"던전을 탈출하던 중, " << monster->getName() << "이(가) 나타났습니다!" << endl;
+
+    while (player->getHP() > 0 && monster->getHP() > 0)
+    {
+        int damage = CalculateDamage(player->getPower(), monster->getDefence());
+        int currentMonsterHP = monster->getHP();
+
+        monster->setHP(currentMonsterHP - damage);
+
+        cout << "플레이어가 " << monster->getName() << "을(를) 공격!" << endl;
+        cout << monster->getName() << "은(는) " << damage << "의 데미지를 입었다!" << endl;
+        cout << monster->getName() << " 남은 HP: " << monster->getHP() << endl;
+
+        if (monster->getHP() <= 0)
+        {
+            cout << monster->getName() << "을(를) 처치했습니다." << endl;
+            Item droppedItem = monster->getDropItem();
+            inventory.push_back(droppedItem);
+            cout << "★ 전투 승리!" << endl;
+            cout << " ->인벤토리에 "<< droppedItem.name<< " 이(가) 저장되었습니다." << endl;
             break;
         }
 
-        slime.attack(player);
+        monster->attack(player);
         cout << "플레이어 남은 HP: " << player->getHP() << endl;
 
-        if (player->getHP() <= 0) {
+        if (player->getHP() <= 0)
+        {
             cout << "플레이어가 쓰러졌습니다." << endl;
             break;
         }
@@ -287,6 +341,7 @@ void BattleSlime(Player* player)
 
 int main()
 {
+    srand(time(0));
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
@@ -296,19 +351,61 @@ int main()
     // stat[MP] = 마나
     // stat[POWER] = 공격력
     // stat[DEFENCE] = 방어력
+    bool isGameRunning = true;
 
     InputCharacter(name, stat);
     PrintCharacter(name, stat);
     RunUpgradeMenu(name, stat);
 
     Player* player = CreatePlayerByJob(name, stat);
+    vector<Item> inventory;
 
-    if (player != nullptr)
+    if (player == nullptr)
     {
-        player->attack();
-        player->printPlayerStatus();
-        BattleSlime(player);
-    }
+   return 0;
+    }     
 
+    while(isGameRunning){
+        int choice;
+        cout <<endl<< "===== 메인 메뉴 =====" << endl;
+        cout << "1. 던전 입장" << endl;
+        cout << "2. 인벤토리 확인" << endl;
+        cout << "3. 포션 제작소" << endl;
+        cout << "0. 게임 종료" << endl;
+        cout << "선택: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            BattleRandomMonster(player, inventory);
+
+            if (player->getHP() <= 0) {
+                cout << "게임 오버." << endl;
+                isGameRunning = false;
+            }
+            break;
+
+        case 2:
+            cout <<endl<<endl<< "[ 인벤토리 (" << inventory.size() << "/30) ]" << endl;
+            if (inventory.empty()) {
+                cout << "인벤토리가 비어있습니다." << endl;
+            }
+            else {
+                for (const Item& item : inventory) {
+                    item.PrintInfo();
+                }
+            }
+            break;
+
+        case 0:
+            cout << "게임을 종료합니다." << endl;
+            isGameRunning = false;
+            break;
+
+        default:
+            cout << "잘못된 선택입니다. 다시 골라주세요." << endl;
+            break;
+        }
+    }
     delete player;
 }
