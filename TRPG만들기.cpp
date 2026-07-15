@@ -9,6 +9,9 @@
 #include "Mage.h"
 #include "Thief.h"
 #include "Archer.h"
+#include "AlchemyWorkshop.h"
+#include "Item.h"
+#include "Monster.h"
 
 using namespace std;
 
@@ -169,109 +172,77 @@ void RunUpgradeMenu(const string& name, int stat[])
     }
 }
 
-struct Item
-{
-    string name;
-    int price;
-    void PrintInfo() const {
-        cout << name << "(" << price << "G)" << endl;
-    }
-};
-
-class Monster {
-protected:
-    string name;
-    int hp;
-    int power;
-    int defence;
-    string dropItemName;
-    int dropItemPrice;
-
-public:
-    Monster(string name, int hp, int power, int defence, string dropItemName, int dropItemPrice) {
-        this->name = name;
-        this->hp = hp;
-        this->power = power;
-        this->defence = defence;
-        this->dropItemName = dropItemName;
-        this->dropItemPrice = dropItemPrice;
-    }
-
-    string getName() {
-        return name;
-    }
-
-    int getHP() {
-        return hp;
-    }
-
-    void setHP(int newHP) {
-        hp = newHP;
-    }
-
-    int getDefence() {
-        return defence;
-    }
-
-    void attack(Player* player) {
-        int damage = power - player->getDefence();
-
-        if (damage <= 0) {
-            damage = 1;
-        }
-
-        int currentHP = player->getHP();
-        player->setHP(currentHP - damage);
-
-        cout << name << "이(가) 플레이어를 공격!" << endl;
-        cout << "플레이어는 " << damage << "의 데미지를 입었다!" << endl;
-    }
-    Item getDropItem() {
-        return Item{ dropItemName, dropItemPrice };
-    }
-};
-
-class Slime : public Monster {
-public:
-    Slime()
-        : Monster("슬라임", 30, 20, 10, "물컹물컹한 액체", 30) {
-    }
-};
-
-class Goblin : public Monster {
-public:
-    Goblin()
-        : Monster("고블린", 50, 30, 15, "고블린의 뼈", 50) {
-    }
-};
-
 Player* CreatePlayerByJob(const string& name, int stat[])
 {
-    int jobChoice;
-
-    cout << "< 전직 시스템 >" << endl;
-    cout << name << "님, 직업을 선택해주세요!" << endl;
-    cout << "1. 전사   2. 마법사   3. 도적   4. 궁수" << endl;
-    cout << "선택: ";
-    cin >> jobChoice;
-
-    switch (jobChoice)
+    while (true)
     {
-    case 1:
-        return new Warrior(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+        int jobChoice;
+        string selectedJob;
 
-    case 2:
-        return new Mage(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+        cout << endl;
+        cout << "< 전직 시스템 >" << endl;
+        cout << name << "님, 직업을 선택해주세요!" << endl;
+        cout << "1. 전사   2. 마법사   3. 도적   4. 궁수" << endl;
+        cout << "선택: ";
+        cin >> jobChoice;
 
-    case 3:
-        return new Thief(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+        switch (jobChoice)
+        {
+        case 1:
+            selectedJob = "전사";
+            break;
 
-    case 4:
-        return new Archer(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+        case 2:
+            selectedJob = "마법사";
+            break;
 
-    default:
-        cout << "잘못된 직업 선택입니다." << endl;
-        return nullptr;
+        case 3:
+            selectedJob = "도적";
+            break;
+
+        case 4:
+            selectedJob = "궁수";
+            break;
+
+        default:
+            cout << "잘못된 직업 선택입니다." << endl;
+            continue;
+        }
+
+        int confirmChoice;
+
+        cout << endl;
+        cout << selectedJob << "(으)로 선택하시겠습니까?" << endl;
+        cout << "1. 예   2. 아니오" << endl;
+        cout << "선택: ";
+        cin >> confirmChoice;
+
+        if (confirmChoice == 2)
+        {
+            cout << "직업을 다시 선택합니다." << endl;
+            continue;
+        }
+
+        if (confirmChoice != 1)
+        {
+            cout << "잘못된 선택입니다. 직업을 다시 선택합니다." << endl;
+            continue;
+        }
+
+        switch (jobChoice)
+        {
+        case 1:
+            return new Warrior(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+
+        case 2:
+            return new Mage(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+
+        case 3:
+            return new Thief(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+
+        case 4:
+            return new Archer(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
+        }
     }
 }
 
@@ -323,7 +294,7 @@ void BattleRandomMonster(Player* player, vector<Item>& inventory)
             cout << monster->getName() << "을(를) 처치했습니다." << endl;
             Item droppedItem = monster->getDropItem();
             inventory.push_back(droppedItem);
-            cout << "★ 전투 승리!" << endl;
+            cout << "★★★ 전투 승리!★★★" << endl;
             cout << " ->인벤토리에 "<< droppedItem.name<< " 이(가) 저장되었습니다." << endl;
             break;
         }
@@ -344,6 +315,8 @@ int main()
     srand(time(0));
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+    vector<Item> inventory;
+    AlchemyWorkshop workshop;
 
     string name;
     int stat[STAT_SIZE];
@@ -358,12 +331,13 @@ int main()
     RunUpgradeMenu(name, stat);
 
     Player* player = CreatePlayerByJob(name, stat);
-    vector<Item> inventory;
 
     if (player == nullptr)
     {
    return 0;
-    }     
+    }
+
+    player->attack();
 
     while(isGameRunning){
         int choice;
@@ -395,6 +369,10 @@ int main()
                     item.PrintInfo();
                 }
             }
+            break;
+
+        case 3:
+            workshop.RunMenu();
             break;
 
         case 0:
