@@ -8,6 +8,8 @@ protected:
     string name;
     string job;
     int level;
+    int exp;
+    int maxExp;
     int hp;
     int mp;
     int power;
@@ -20,6 +22,7 @@ public:
     void setHP(int newHP);
     int getDefence();
     int getPower();
+    void gainExp(int amount);
 
     virtual void attack() = 0;
     virtual ~Player() {}

@@ -5,16 +5,24 @@
 
 using namespace std;
 
-Monster::Monster(string name, int hp, int power, int defence, string dropItemName, int dropItemPrice)
-    : name(std::move(name)),
-      hp(hp),
-      power(power),
-      defence(defence),
-      dropItemName(std::move(dropItemName)),
-      dropItemPrice(dropItemPrice)
+Monster::Monster(
+    string name,
+    int hp,
+    int power,
+    int defence,
+    string dropItemName,
+    int dropItemPrice,
+    int expReward
+)
+    : name(move(name)),
+    hp(hp),
+    power(power),
+    defence(defence),
+    dropItemName(move(dropItemName)),
+    dropItemPrice(dropItemPrice),
+    expReward(expReward)
 {
 }
-
 string Monster::getName()
 {
     return name;
@@ -56,12 +64,16 @@ Item Monster::getDropItem()
     return Item{ dropItemName, dropItemPrice };
 }
 
+int Monster::getExpReward() {
+    return expReward;
+}
+
 Slime::Slime()
-    : Monster("슬라임", 30, 20, 10, "맑은 물", 30)
+    : Monster("슬라임", 30, 20, 10, "맑은 물", 30, 30)
 {
 }
 
 Goblin::Goblin()
-    : Monster("고블린", 50, 30, 15, "허브", 50)
+    : Monster("고블린", 50, 30, 15, "허브", 50, 50)
 {
 }

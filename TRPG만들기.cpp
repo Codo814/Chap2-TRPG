@@ -120,10 +120,14 @@ void PrintUpgradeMenu()
     cout << "번호를 선택해주세요: ";
 }
 
-void RunUpgradeMenu(const string& name, int stat[])
+void setPotion(int count, int* p_HPPotion, int* p_MPPotion) {
+    *p_HPPotion = count;
+    *p_MPPotion = count;
+}
+
+void RunUpgradeMenu(const string& name, int stat[], int& HPPotion, int& MPPotion)
+
 {
-    int hpPotion = 5;
-    int mpPotion = 5;
     bool isGameStart = false;
 
     cout << endl << endl << "* HP 포션 5개, MP 포션 5개가 기본 지급되었습니다." << endl;
@@ -137,11 +141,11 @@ void RunUpgradeMenu(const string& name, int stat[])
         switch (choice)
         {
         case 1:
-            UsePotion(stat[HP], hpPotion, "HP", "HP");
+            UsePotion(stat[HP], HPPotion, "HP", "HP");
             break;
 
         case 2:
-            UsePotion(stat[MP], mpPotion, "MP", "MP");
+            UsePotion(stat[MP], MPPotion, "MP", "MP");
             break;
 
         case 3:
@@ -295,6 +299,7 @@ void BattleRandomMonster(Player* player, vector<Item>& inventory)
             Item droppedItem = monster->getDropItem();
             inventory.push_back(droppedItem);
             cout << "★★★ 전투 승리!★★★" << endl;
+            player->gainExp(monster->getExpReward());
             cout << " ->인벤토리에 "<< droppedItem.name<< " 이(가) 저장되었습니다." << endl;
             break;
         }
@@ -324,11 +329,17 @@ int main()
     // stat[MP] = 마나
     // stat[POWER] = 공격력
     // stat[DEFENCE] = 방어력
+
+    int HPPotion;
+    int MPPotion;
+
+    setPotion(5, &HPPotion, &MPPotion);
+
     bool isGameRunning = true;
 
     InputCharacter(name, stat);
     PrintCharacter(name, stat);
-    RunUpgradeMenu(name, stat);
+    RunUpgradeMenu(name, stat, HPPotion, MPPotion);
 
     Player* player = CreatePlayerByJob(name, stat);
 
@@ -338,6 +349,7 @@ int main()
     }
 
     player->attack();
+    player->printPlayerStatus();
 
     while(isGameRunning){
         int choice;
