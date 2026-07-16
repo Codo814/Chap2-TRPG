@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="AlchemyWorkshop.h" />
     <ClInclude Include="Archer.h" />
+    <ClInclude Include="Inventory.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Mage.h" />
     <ClInclude Include="Monster.h" />
@@ -152,4 +153,3 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
-
