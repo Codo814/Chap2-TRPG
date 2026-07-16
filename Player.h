@@ -3,6 +3,8 @@
 #include <string>
 using namespace std;
 
+class Monster;
+
 class Player {
 protected:
     string name;
@@ -20,11 +22,15 @@ public:
 
     int getHP();
     void setHP(int newHP);
+    void setName(const string& newName);
+    int getMP();
+    void setMP(int newMP);
     int getDefence();
     int getPower();
     void gainExp(int amount);
 
-    virtual void attack() = 0;
+    virtual void attack(Monster* monster) = 0;
+    virtual bool skill(Monster* monster) = 0;
     virtual ~Player() {}
 
     void printPlayerStatus();

@@ -1,10 +1,14 @@
 ﻿#include <iostream>
+#define NOMINMAX
+
 #include <cstdlib>
 #include <ctime>
 #include <string>
 #include <windows.h>
 #include <vector>
 #include <limits>
+#include <thread>
+#include <chrono>
 #include "Warrior.h"
 #include "Mage.h"
 #include "Thief.h"
@@ -38,6 +42,28 @@ void PrintTitle()
     cout << "===========================================" << endl;
 }
 
+void ClearScreen()
+{
+    system("cls");
+}
+
+void WaitForEnter(const string& message = "Enter를 누르면 다음 턴으로 넘어갑니다.")
+{
+    cout << endl << message;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
+}
+
+void PrintStatComparison(const int previousStat[], const int newStat[])
+{
+    cout << "===== 스탯 리롤 결과 =====" << endl << endl;
+    cout << "HP      " << previousStat[HP] << " -> " << newStat[HP] << endl;
+    cout << "MP      " << previousStat[MP] << " -> " << newStat[MP] << endl;
+    cout << "공격력  " << previousStat[POWER] << " -> " << newStat[POWER] << endl;
+    cout << "방어력  " << previousStat[DEFENCE] << " -> " << newStat[DEFENCE] << endl;
+    cout << endl;
+}
+
 void InputStatPair(const string& inputMessage, const string& errorMessage, int& firstStat, int& secondStat)
 {
     while (true)
@@ -61,63 +87,98 @@ void InputStatPair(const string& inputMessage, const string& errorMessage, int& 
     }
 }
 
-void InputCharacter(string& name, int stat[])
+void GenerateRandomStats(int stat[])
+{
+    for (int i = 0; i < STAT_SIZE; i++)
+    {
+        stat[i] = rand() % 51 + 50;
+    }
+}
+
+void InputCharacterName(string& name)
 {
     PrintTitle();
 
     cout << "캐릭터 이름을 적어주세요. : ";
     cin >> name;
 
-    InputStatPair(
-        "체력과 마나를 적어주세요. : ",
-        "체력이나 마나값이 너무 작습니다. 다시 입력해주세요.",
-        stat[HP],
-        stat[MP]
-    );
-
-    InputStatPair(
-        "공격력과 방어력을 적어주세요. : ",
-        "공격력이나 방어력이 너무 작습니다. 다시 입력해주세요.",
-        stat[POWER],
-        stat[DEFENCE]
-    );
+    ClearScreen();
 }
 
-void UsePotion(int& stat, int& potionCount, const string& statName, const string& potionName)
+void RollCharacterStats(const string& name, int stat[])
 {
-    if (potionCount > 0)
+    int rerollCount = 3;
+    int previousStat[STAT_SIZE] = { 0, 0, 0, 0 };
+    bool hasPreviousStat = false;
+    bool rerollLimitReached = false;
+    GenerateRandomStats(stat);
+
+    while (true)
     {
-        int beforeStat = stat;
-        stat += 20;
-        potionCount--;
+        ClearScreen();
 
-        cout << endl << endl << "* " << statName << "가 20 증가했습니다. ("
-            << beforeStat << " -> " << stat << ") "
-            << "(" << potionName << " 포션 차감 : 남은 포션 " << potionCount << "개)" << endl;
+        if (hasPreviousStat)
+        {
+            PrintStatComparison(previousStat, stat);
+        }
+        else
+        {
+            cout << "랜덤 능력치가 생성되었습니다." << endl;
+            PrintCharacter(name, stat);
+        }
+
+        cout <<endl<< "남은 리롤 기회: " << rerollCount << "회" << endl;
+        cout << "이 스탯으로 정하시겠습니까?" << endl;
+        cout << "1. 예   2. 아니오" << endl;
+        cout << "선택: ";
+
+        int choice;
+        cin >> choice;
+
+        if (cin.fail())
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "숫자만 입력해주세요." << endl;
+            continue;
+        }
+
+        if (choice == 1)
+        {
+            cout << "능력치가 확정되었습니다." << endl;
+            break;
+        }
+
+        if (choice == 2)
+        {
+            if (rerollCount > 0)
+            {
+                for (int i = 0; i < STAT_SIZE; i++)
+                {
+                    previousStat[i] = stat[i];
+                }
+
+                rerollCount--;
+                GenerateRandomStats(stat);
+                hasPreviousStat = true;
+                continue;
+            }
+            rerollLimitReached = true;
+            break;
+        }
+
+        cout << "1 또는 2를 선택해주세요." << endl;
     }
-    else
+
+    if (rerollLimitReached)
     {
-        cout << endl << endl << potionName << " 포션이 부족합니다." << endl;
+        ClearScreen();
+        cout << "리롤 기회를 모두 사용했습니다. 현재 능력치로 확정됩니다." << endl;
+        PrintCharacter(name, stat);
     }
-}
 
-void DoubleStat(int& stat, const string& statName)
-{
-    int beforeStat = stat;
-    stat *= 2;
-
-    cout << endl << endl << "* " << statName << "이 2배 증가했습니다. ("
-        << statName << " : " << beforeStat << " -> " << stat << ")" << endl;
-}
-
-void PrintUpgradeMenu()
-{
-    cout << "============================================" << endl;
-    cout << "< 캐릭터 강화 >" << endl;
-    cout << "1. HP UP    2. MP UP    3. 공격력 2배" << endl;
-    cout << "4. 방어력 2배  5. 현재 능력치  0. 게임 시작" << endl;
-    cout << "============================================" << endl;
-    cout << "번호를 선택해주세요: ";
+    WaitForEnter("Enter를 누르면 캐릭터 설정 메뉴로 돌아갑니다.");
+    ClearScreen();
 }
 
 void setPotion(int count, int* p_HPPotion, int* p_MPPotion) {
@@ -125,87 +186,49 @@ void setPotion(int count, int* p_HPPotion, int* p_MPPotion) {
     *p_MPPotion = count;
 }
 
-void RunUpgradeMenu(const string& name, int stat[], int& HPPotion, int& MPPotion)
-
-{
-    bool isGameStart = false;
-
-    cout << endl << endl << "* HP 포션 5개, MP 포션 5개가 기본 지급되었습니다." << endl;
-
-    while (!isGameStart)
-    {
-        int choice;
-        PrintUpgradeMenu();
-        cin >> choice;
-
-        switch (choice)
-        {
-        case 1:
-            UsePotion(stat[HP], HPPotion, "HP", "HP");
-            break;
-
-        case 2:
-            UsePotion(stat[MP], MPPotion, "MP", "MP");
-            break;
-
-        case 3:
-            DoubleStat(stat[POWER], "공격력");
-            break;
-
-        case 4:
-            DoubleStat(stat[DEFENCE], "방어력");
-            break;
-
-        case 5:
-            cout << endl << endl;
-            PrintCharacter(name, stat);
-            cout << endl;
-            break;
-
-        case 0:
-            cout << endl << endl << "============================================" << endl;
-            cout << "이제 던전 탈출 게임을 시작합니다!" << endl;
-            cout << "============================================" << endl;
-            isGameStart = true;
-            break;
-
-        default:
-            cout << "잘못된 번호입니다. 다시 선택해주세요." << endl;
-            break;
-        }
-    }
-}
-
 Player* CreatePlayerByJob(const string& name, int stat[])
 {
     while (true)
     {
+        ClearScreen();
+
         int jobChoice;
         string selectedJob;
+        string selectedBonus;
+        string selectedSkillDescription;
 
-        cout << endl;
+        cout << "============================================"<< endl;
         cout << "< 전직 시스템 >" << endl;
         cout << name << "님, 직업을 선택해주세요!" << endl;
         cout << "1. 전사   2. 마법사   3. 도적   4. 궁수" << endl;
-        cout << "선택: ";
+        cout << "============================================" << endl;
+        cout <<endl<< "선택: ";
         cin >> jobChoice;
 
         switch (jobChoice)
         {
         case 1:
             selectedJob = "전사";
+            selectedBonus = "HP +20, 공격력 +10";
+            selectedSkillDescription = "장검 휘두르기 - 공격력 x1.2, 1회 공격 (MP 20, 적 방어력 적용)";
             break;
 
         case 2:
             selectedJob = "마법사";
+            selectedBonus = "MP +20, 공격력 +10";
+            selectedSkillDescription = "파이어볼 - 공격력 x1.5, 1회 공격 (MP 25, 적 방어력 적용)";
             break;
 
         case 3:
             selectedJob = "도적";
+            selectedBonus = "HP +10, 공격력 +20";
+            selectedSkillDescription = "단검찌르기 - 적 방어력 무시, 공격력 x0.4, 2회 공격 (MP 20)";
             break;
 
         case 4:
             selectedJob = "궁수";
+            selectedBonus = "HP +10, MP +10, 공격력 +10";
+            selectedSkillDescription = "더블샷 - 적 방어력 무시, 공격력 x0.4, 2회 공격 (MP 20)";
             break;
 
         default:
@@ -216,9 +239,14 @@ Player* CreatePlayerByJob(const string& name, int stat[])
         int confirmChoice;
 
         cout << endl;
+        cout << "직업 보너스: " << selectedBonus << endl;
+        if (!selectedSkillDescription.empty())
+        {
+            cout << "스킬: " << selectedSkillDescription << endl;
+        }
         cout << selectedJob << "(으)로 선택하시겠습니까?" << endl;
         cout << "1. 예   2. 아니오" << endl;
-        cout << "선택: ";
+        cout <<endl<< "선택: ";
         cin >> confirmChoice;
 
         if (confirmChoice == 2)
@@ -236,33 +264,286 @@ Player* CreatePlayerByJob(const string& name, int stat[])
         switch (jobChoice)
         {
         case 1:
+            cout <<endl<< "전사로 전직했습니다. (HP +20, 공격력 +10)" << endl;
             return new Warrior(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
 
         case 2:
+            cout <<endl<< "마법사로 전직했습니다. (MP +20, 공격력 +10)" << endl;
             return new Mage(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
 
         case 3:
+            cout <<endl<< "도적으로 전직했습니다. (HP +10, 공격력 +20)" << endl;
             return new Thief(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
 
         case 4:
+            cout <<endl<< "궁수로 전직했습니다. (HP +10, MP +10, 공격력 +10)" << endl;
             return new Archer(name, stat[HP], stat[MP], stat[POWER], stat[DEFENCE]);
         }
     }
 }
 
-int CalculateDamage(int attackPower, int defence)
+void ShowInventorySummary(
+    const vector<Item>& inventory,
+    int HPPotion,
+    int MPPotion)
 {
-    int damage = attackPower - defence;
+    cout << "===== 인벤토리 =====" << endl;
+    cout << "HP 포션: " << HPPotion << "개" << endl;
+    cout << "MP 포션: " << MPPotion << "개" << endl;
+    cout << "획득한 재료: " << inventory.size() << "/30" << endl;
 
-    if (damage <= 0)
+    if (inventory.empty())
     {
-        damage = 1;
+        cout << "인벤토리에 저장된 재료가 없습니다." << endl;
+        return;
     }
 
-    return damage;
+    for (const Item& item : inventory)
+    {
+        item.PrintInfo();
+    }
 }
 
-void BattleRandomMonster(Player* player, vector<Item>& inventory)
+Player* RunCharacterSetupMenu(
+    string& name,
+    int stat[],
+    const vector<Item>& inventory,
+    int HPPotion,
+    int MPPotion)
+{
+    bool statConfirmed = false;
+    Player* player = nullptr;
+
+    while (true)
+    {
+        ClearScreen();
+        cout << "============================================" << endl;
+        cout << "< 캐릭터 설정 >" << endl;
+        cout << "1. 스탯 돌리기" << endl;
+        cout << "2. 직업 선택하기" << endl;
+        cout << "3. 현재 능력치 확인하기" << endl;
+        cout << "4. 인벤토리 확인하기" << endl;
+        cout << "5. 닉네임 변경하기" << endl;
+        cout << "0. 게임 시작" << endl;
+        cout << "============================================" << endl;
+        cout << "스탯 확정: " << (statConfirmed ? "완료" : "미완료") << endl;
+        cout << "직업 선택: " << (player != nullptr ? "완료" : "미완료") << endl;
+        cout << "선택: ";
+
+        int choice;
+        cin >> choice;
+
+        if (cin.fail())
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "숫자만 입력해주세요." << endl;
+            cout << "Enter를 누르면 설정 메뉴로 돌아갑니다.";
+            cin.get();
+            continue;
+        }
+
+        switch (choice)
+        {
+        case 1:
+            if (statConfirmed)
+            {
+                cout << "스탯을 이미 확정한 상태라 변경할 수 없습니다." << endl;
+                WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+                break;
+            }
+
+            RollCharacterStats(name, stat);
+            statConfirmed = true;
+            break;
+
+        case 2:
+            if (!statConfirmed)
+            {
+                cout << "먼저 1번에서 스탯을 확정해주세요." << endl;
+                WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+                break;
+            }
+
+            {
+                Player* newPlayer = CreatePlayerByJob(name, stat);
+
+                delete player;
+                player = newPlayer;
+
+                player->printPlayerStatus();
+                WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+                ClearScreen();
+            }
+            break;
+
+        case 3:
+            ClearScreen();
+            if (player != nullptr)
+            {
+                player->printPlayerStatus();
+            }
+            else if (statConfirmed)
+            {
+                PrintCharacter(name, stat);
+                cout << "아직 직업을 선택하지 않았습니다." << endl;
+            }
+            else
+            {
+                cout << "아직 확정된 스탯이 없습니다." << endl;
+            }
+            WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+            ClearScreen();
+            break;
+
+        case 4:
+            ClearScreen();
+            ShowInventorySummary(inventory, HPPotion, MPPotion);
+            WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+            ClearScreen();
+            break;
+
+        case 5:
+            ClearScreen();
+            cout << "현재 닉네임: " << name << endl;
+            cout << "새로운 닉네임을 입력해주세요: ";
+            cin >> name;
+
+            if (player != nullptr)
+            {
+                player->setName(name);
+            }
+
+            cout << "닉네임이 " << name << "(으)로 변경되었습니다." << endl;
+            WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+            ClearScreen();
+            break;
+
+        case 0:
+            if (!statConfirmed || player == nullptr)
+            {
+                if (!statConfirmed)
+                {
+                    cout << "스탯을 먼저 확정해야 합니다." << endl;
+                }
+                if (player == nullptr)
+                {
+                    cout << "직업을 먼저 선택해야 합니다." << endl;
+                }
+                WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+                break;
+            }
+
+            ClearScreen();
+            cout << "============================================" << endl;
+            cout << "캐릭터 설정이 완료되었습니다." << endl;
+            cout << "이제 던전 탈출 게임을 시작합니다!" << endl;
+            cout << "============================================" << endl;
+            player->printPlayerStatus();
+            WaitForEnter("Enter를 누르면 메인 메뉴로 넘어갑니다.");
+            ClearScreen();
+            return player;
+
+        default:
+            cout << "잘못된 번호입니다." << endl;
+            WaitForEnter("Enter를 누르면 설정 메뉴로 돌아갑니다.");
+            break;
+        }
+    }
+}
+
+void PauseBattleOutput()
+{
+    this_thread::sleep_for(chrono::milliseconds(700));
+}
+
+int InputBattleChoice(int minChoice, int maxChoice)
+{
+    while (true)
+    {
+        int choice;
+        cin >> choice;
+
+        if (cin.fail())
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "숫자만 입력해주세요: ";
+            continue;
+        }
+
+        if (choice < minChoice || choice > maxChoice)
+        {
+            cout << minChoice << "부터 " << maxChoice << " 사이의 번호를 입력해주세요: ";
+            continue;
+        }
+
+        return choice;
+    }
+}
+
+bool RunBattleInventory(
+    Player* player,
+    const vector<Item>& inventory,
+    int& HPPotion,
+    int& MPPotion)
+{
+    ClearScreen();
+    cout << endl << "===== 전투 인벤토리 =====" << endl;
+    cout << "획득한 재료: " << inventory.size() << "개" << endl;
+
+    for (const Item& item : inventory)
+    {
+        item.PrintInfo();
+    }
+
+    cout << "1. HP 포션 사용 (" << HPPotion << "개)" << endl;
+    cout << "2. MP 포션 사용 (" << MPPotion << "개)" << endl;
+    cout << "0. 돌아가기" << endl;
+    cout << "선택: ";
+
+    int choice = InputBattleChoice(0, 2);
+
+    if (choice == 0)
+    {
+        return false;
+    }
+
+    if (choice == 1)
+    {
+        if (HPPotion <= 0)
+        {
+            cout << "HP 포션이 부족합니다." << endl;
+            return false;
+        }
+
+        int beforeHP = player->getHP();
+        player->setHP(beforeHP + 20);
+        HPPotion--;
+        cout << "HP 포션을 사용했습니다. (HP: " << beforeHP << " -> "
+             << player->getHP() << ", 남은 포션: " << HPPotion << "개)" << endl;
+        return true;
+    }
+
+    if (MPPotion <= 0)
+    {
+        cout << "MP 포션이 부족합니다." << endl;
+        return false;
+    }
+
+    int beforeMP = player->getMP();
+    player->setMP(beforeMP + 20);
+    MPPotion--;
+    cout << "MP 포션을 사용했습니다. (MP: " << beforeMP << " -> "
+         << player->getMP() << ", 남은 포션: " << MPPotion << "개)" << endl;
+    return true;
+}
+
+void BattleRandomMonster(
+    Player* player,
+    vector<Item>& inventory,
+    int& HPPotion,
+    int& MPPotion)
 {
     Slime slime;
     Goblin goblin;
@@ -280,51 +561,113 @@ void BattleRandomMonster(Player* player, vector<Item>& inventory)
         monster = &goblin;
     }
 
-    cout <<endl<<endl <<"던전을 탈출하던 중, " << monster->getName() << "이(가) 나타났습니다!" << endl;
+    cout << endl << endl << "던전을 탈출하던 중, " << monster->getName() << "이(가) 나타났습니다!" << endl;
+    WaitForEnter("Enter를 누르면 전투를 시작합니다.");
 
     while (player->getHP() > 0 && monster->getHP() > 0)
     {
-        int damage = CalculateDamage(player->getPower(), monster->getDefence());
-        int currentMonsterHP = monster->getHP();
+        ClearScreen();
+        cout << "===== 전투 =====" << endl;
+        cout << "플레이어 HP: " << player->getHP()
+             << " | MP: " << player->getMP() << endl;
+        cout << monster->getName() << " HP: " << monster->getHP() << endl;
 
-        monster->setHP(currentMonsterHP - damage);
+        bool playerActed = false;
+        bool isDefending = false;
 
-        cout << "플레이어가 " << monster->getName() << "을(를) 공격!" << endl;
-        cout << monster->getName() << "은(는) " << damage << "의 데미지를 입었다!" << endl;
-        cout << monster->getName() << " 남은 HP: " << monster->getHP() << endl;
+        while (!playerActed)
+        {
+            cout << endl << "무엇을 할까?" << endl;
+            cout << "1. 공격" << endl;
+            cout << "2. 스킬" << endl;
+            cout << "3. 방어" << endl;
+            cout << "4. 인벤토리 (포션 사용)" << endl;
+            cout << "5. 턴 넘기기" << endl;
+            cout << "선택: ";
+
+            int choice = InputBattleChoice(1, 5);
+
+            switch (choice)
+            {
+            case 1:
+                player->attack(monster);
+                playerActed = true;
+                break;
+
+            case 2:
+                playerActed = player->skill(monster);
+                break;
+
+            case 3:
+                cout << "방어 자세를 취했습니다." << endl;
+                isDefending = true;
+                playerActed = true;
+                break;
+
+            case 4:
+                playerActed = RunBattleInventory(
+                    player,
+                    inventory,
+                    HPPotion,
+                    MPPotion);
+                break;
+
+            case 5:
+                cout << "아무 행동도 하지 않고 턴을 넘겼습니다." << endl;
+                playerActed = true;
+                break;
+            }
+        }
+
+        int displayedMonsterHP = monster->getHP();
+        if (displayedMonsterHP < 0)
+        {
+            displayedMonsterHP = 0;
+        }
+        cout << monster->getName() << " 남은 HP: " << displayedMonsterHP << endl;
 
         if (monster->getHP() <= 0)
         {
             cout << monster->getName() << "을(를) 처치했습니다." << endl;
             Item droppedItem = monster->getDropItem();
             inventory.push_back(droppedItem);
-            cout << "★★★ 전투 승리!★★★" << endl;
+            cout <<endl<< "★★★ 전투 승리!★★★" << endl;
             player->gainExp(monster->getExpReward());
+            player->printPlayerStatus();
             cout << " ->인벤토리에 "<< droppedItem.name<< " 이(가) 저장되었습니다." << endl;
+            WaitForEnter("Enter를 누르면 메인 메뉴로 돌아갑니다.");
+            ClearScreen();
             break;
         }
 
-        monster->attack(player);
+        cout << endl << "--- 몬스터의 턴 ---" << endl;
+        PauseBattleOutput();
+        monster->attack(player, isDefending);
         cout << "플레이어 남은 HP: " << player->getHP() << endl;
+        PauseBattleOutput();
 
         if (player->getHP() <= 0)
         {
             cout << "플레이어가 쓰러졌습니다." << endl;
+            WaitForEnter("Enter를 누르면 전투를 종료합니다.");
+            ClearScreen();
             break;
         }
+
+        WaitForEnter();
     }
 }
 
 int main()
 {
-    srand(time(0));
+    srand(static_cast<unsigned int>(time(nullptr)));
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
     vector<Item> inventory;
     AlchemyWorkshop workshop;
 
     string name;
-    int stat[STAT_SIZE];
+    int stat[STAT_SIZE] = { 0, 0, 0, 0 };
     // stat[HP] = 체력
     // stat[MP] = 마나
     // stat[POWER] = 공격력
@@ -337,19 +680,18 @@ int main()
 
     bool isGameRunning = true;
 
-    InputCharacter(name, stat);
-    PrintCharacter(name, stat);
-    RunUpgradeMenu(name, stat, HPPotion, MPPotion);
-
-    Player* player = CreatePlayerByJob(name, stat);
+    InputCharacterName(name);
+    Player* player = RunCharacterSetupMenu(
+        name,
+        stat,
+        inventory,
+        HPPotion,
+        MPPotion);
 
     if (player == nullptr)
     {
    return 0;
     }
-
-    player->attack();
-    player->printPlayerStatus();
 
     while(isGameRunning){
         int choice;
@@ -363,7 +705,7 @@ int main()
 
         switch (choice) {
         case 1:
-            BattleRandomMonster(player, inventory);
+            BattleRandomMonster(player, inventory, HPPotion, MPPotion);
 
             if (player->getHP() <= 0) {
                 cout << "게임 오버." << endl;
@@ -372,19 +714,15 @@ int main()
             break;
 
         case 2:
-            cout <<endl<<endl<< "[ 인벤토리 (" << inventory.size() << "/30) ]" << endl;
-            if (inventory.empty()) {
-                cout << "인벤토리가 비어있습니다." << endl;
-            }
-            else {
-                for (const Item& item : inventory) {
-                    item.PrintInfo();
-                }
-            }
+            ClearScreen();
+            ShowInventorySummary(inventory, HPPotion, MPPotion);
+            WaitForEnter("Enter를 누르면 메인 메뉴로 돌아갑니다.");
+            ClearScreen();
             break;
 
         case 3:
             workshop.RunMenu();
+            ClearScreen();
             break;
 
         case 0:

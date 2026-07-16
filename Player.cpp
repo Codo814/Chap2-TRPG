@@ -19,6 +19,18 @@ void Player::setHP(int newHP) {
     hp = newHP;
 }
 
+void Player::setName(const string& newName) {
+    name = newName;
+}
+
+int Player::getMP() {
+    return mp;
+}
+
+void Player::setMP(int newMP) {
+    mp = newMP;
+}
+
 int Player::getDefence() {
     return defence;
 }

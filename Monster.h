@@ -24,7 +24,7 @@ public:
     int getHP();
     void setHP(int newHP);
     int getDefence();
-    void attack(Player* player);
+    void attack(Player* player, bool isDefending = false);
     Item getDropItem();
     int getExpReward();
 };
