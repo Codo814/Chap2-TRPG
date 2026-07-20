@@ -1,7 +1,13 @@
-#pragma once
+﻿#pragma once
+#include "Item.h"
+#include<algorithm>
 #include <string>
 #include <iostream>
 using namespace std;
+
+inline bool compareByPrice(const Item& a, const Item& b) {
+	return a.price < b.price;
+}
 
 template<typename T>
 class Inventory {
@@ -9,8 +15,19 @@ private:
 	T* pItems_;
 	int capacity_;
 	int size_;
+	void Resize(int newCapacity) {
+
+		T* newItems = new T[newCapacity];
+		for (int i = 0; i < size_; i++) {
+			newItems[i] = pItems_[i];
+		}
+		delete[] pItems_;
+		pItems_= newItems;
+		capacity_ = newCapacity;
+	}
 
 public:
+
 	Inventory(int capacity) {
 		capacity_ = capacity;
 		size_ = 0;
@@ -19,7 +36,11 @@ public:
 
 	bool AddItem(const T& item) {
 		if (size_ >= capacity_) {
-			return false;
+			int oldCapacity = capacity_;
+			Resize(capacity_ * 2);
+			cout << "-> 인벤토리 자동 확장! ("
+				<< oldCapacity << " -> "
+				<< capacity_<< ")" << endl;
 		}
 		pItems_[size_] = item;
 		size_++;
@@ -40,9 +61,13 @@ public:
 		return capacity_;
 	}
 
+	void SortItems() {
+		sort(pItems_, pItems_ + size_, compareByPrice);
+	}
+
 	void PrintAllItems() const {
 		if (size_ == 0) {
-			cout << "�κ��丮�� ����ֽ��ϴ�. " << endl;
+			cout << "인벤토리가 비어있습니다. " << endl;
 			return;
 		}
 		for (int i = 0; i < size_; i++) {

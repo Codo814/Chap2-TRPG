@@ -16,6 +16,7 @@
 #include "AlchemyWorkshop.h"
 #include "Item.h"
 #include "Monster.h"
+#include "Inventory.h"
 
 using namespace std;
 
@@ -24,6 +25,8 @@ const int HP = 0;
 const int MP = 1;
 const int POWER = 2;
 const int DEFENCE = 3;
+
+
 
 void PrintCharacter(const string& name, int stat[])
 {
@@ -283,31 +286,27 @@ Player* CreatePlayerByJob(const string& name, int stat[])
 }
 
 void ShowInventorySummary(
-    const vector<Item>& inventory,
+    const Inventory<Item>& inventory,
     int HPPotion,
     int MPPotion)
 {
     cout << "===== 인벤토리 =====" << endl;
     cout << "HP 포션: " << HPPotion << "개" << endl;
     cout << "MP 포션: " << MPPotion << "개" << endl;
-    cout << "획득한 재료: " << inventory.size() << "/30" << endl;
+    cout << "획득한 재료: " << inventory.GetSize() << "/30" << endl;
 
-    if (inventory.empty())
+    if (inventory.GetSize() == 0 )
     {
         cout << "인벤토리에 저장된 재료가 없습니다." << endl;
         return;
     }
-
-    for (const Item& item : inventory)
-    {
-        item.PrintInfo();
-    }
+    inventory.PrintAllItems();
 }
 
 Player* RunCharacterSetupMenu(
     string& name,
     int stat[],
-    const vector<Item>& inventory,
+    const Inventory<Item>& inventory,
     int HPPotion,
     int MPPotion)
 {
@@ -484,19 +483,14 @@ int InputBattleChoice(int minChoice, int maxChoice)
 
 bool RunBattleInventory(
     Player* player,
-    const vector<Item>& inventory,
+    const Inventory<Item>& inventory,
     int& HPPotion,
     int& MPPotion)
 {
     ClearScreen();
     cout << endl << "===== 전투 인벤토리 =====" << endl;
-    cout << "획득한 재료: " << inventory.size() << "개" << endl;
-
-    for (const Item& item : inventory)
-    {
-        item.PrintInfo();
-    }
-
+    cout << "획득한 재료: "<< inventory.GetSize() << "/"<< inventory.GetCapacity() << endl;
+    inventory.PrintAllItems();
     cout << "1. HP 포션 사용 (" << HPPotion << "개)" << endl;
     cout << "2. MP 포션 사용 (" << MPPotion << "개)" << endl;
     cout << "0. 돌아가기" << endl;
@@ -541,7 +535,7 @@ bool RunBattleInventory(
 
 void BattleRandomMonster(
     Player* player,
-    vector<Item>& inventory,
+    Inventory<Item>& inventory,
     int& HPPotion,
     int& MPPotion)
 {
@@ -630,7 +624,7 @@ void BattleRandomMonster(
         {
             cout << monster->getName() << "을(를) 처치했습니다." << endl;
             Item droppedItem = monster->getDropItem();
-            inventory.push_back(droppedItem);
+            inventory.AddItem(droppedItem);
             cout <<endl<< "★★★ 전투 승리!★★★" << endl;
             player->gainExp(monster->getExpReward());
             player->printPlayerStatus();
@@ -663,7 +657,7 @@ int main()
     srand(static_cast<unsigned int>(time(nullptr)));
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-    vector<Item> inventory;
+    Inventory<Item> inventory(3);
     AlchemyWorkshop workshop;
 
     string name;

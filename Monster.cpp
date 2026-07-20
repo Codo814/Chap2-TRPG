@@ -78,11 +78,11 @@ int Monster::getExpReward() {
 }
 
 Slime::Slime()
-    : Monster("슬라임", 100, 50, 10, "맑은 물", 30, 30)
+    : Monster("슬라임", 100, 30, 30, "맑은 물", 30, 30)
 {
 }
 
 Goblin::Goblin()
-    : Monster("고블린", 150, 70, 15, "허브", 50, 50)
+    : Monster("고블린", 150, 40, 30, "허브", 50, 50)
 {
 }
