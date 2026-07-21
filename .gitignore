@@ -28,6 +28,10 @@ Release/
 *.userosscache
 *.sln.docstates
 
+# Visual Studio C++ project files
+*.vcxproj
+*.vcxproj.filters
+
 # Database/cache files
 *.VC.db
 *.VC.VC.opendb

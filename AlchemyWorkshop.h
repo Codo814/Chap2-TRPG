@@ -18,6 +18,8 @@ class AlchemyWorkshop
 {
 private:
     std::vector<PotionRecipe> recipes;
+    std::map<std::string, int> potionStock_;
+    static const int MAX_STOCK = 3;
 
 public:
     AlchemyWorkshop();
@@ -25,5 +27,8 @@ public:
     void ShowAllRecipes();
     void SearchByName(std::string name);
     void SearchByIngredient(std::string ingredient);
+    int GetStock(std::string name);
+    void DispensePotion(std::string name);
+    void ReturnPotion(std::string name);
     void RunMenu();
 };
