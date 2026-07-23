@@ -35,7 +35,7 @@ public:
 	}
 
 	bool AddItem(const T& item) {
-		if (size_ >= capacity_) {
+		if (size_ +1 > capacity_) {
 			int oldCapacity = capacity_;
 			Resize(capacity_ * 2);
 			cout << "-> 인벤토리 자동 확장! ("

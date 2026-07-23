@@ -40,3 +40,15 @@ class Goblin : public Monster
 public:
     Goblin();
 };
+
+class Ork : public Monster
+{
+public:
+    Ork();
+};
+
+class Dragon : public Monster
+{
+public:
+    Dragon();
+};

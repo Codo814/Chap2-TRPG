@@ -533,7 +533,14 @@ bool RunBattleInventory(
     return true;
 }
 
-void BattleRandomMonster(
+void BattleMonster(
+    Player* player,
+    Monster* monster,
+    Inventory<Item>& inventory,
+    int& HPPotion,
+    int& MPPotion);
+
+void RunDungeon(
     Player* player,
     Inventory<Item>& inventory,
     int& HPPotion,
@@ -541,21 +548,66 @@ void BattleRandomMonster(
 {
     Slime slime;
     Goblin goblin;
+    Ork ork;
+    Dragon dragon;
 
-    Monster* monster = nullptr;
+    vector<Monster*> rooms = {
+        &slime,
+        &goblin,
+        &ork
+    };
 
-    int randomMonster = rand() % 2;
-
-    if (randomMonster == 0)
+    for (int i = 0; i < rooms.size(); i++)
     {
-        monster = &slime;
+        Monster* currentMonster = rooms[i];
+
+        cout <<endl<< "[ 던전 " << i + 1 << "번 방 ]" << endl;
+        cout << currentMonster->getName() << " 등장!" << endl;
+
+        BattleMonster(
+            player,
+            currentMonster,
+            inventory,
+            HPPotion,
+            MPPotion);
+
+        if (player->getHP() <= 0)
+        {
+            return;
+        }
+
+        cout << i + 1 << "번 방 클리어!" << endl;
     }
-    else
+    cout << "★ 보스방 개방!" << endl;
+    cout << dragon.getName() << " 등장!" << endl;
+
+    BattleMonster(
+        player,
+        &dragon,
+        inventory,
+        HPPotion,
+        MPPotion);
+    if (player->getHP() <= 0)
     {
-        monster = &goblin;
+        return;
     }
 
-    cout << endl << endl << "던전을 탈출하던 중, " << monster->getName() << "이(가) 나타났습니다!" << endl;
+    cout << dragon.getName() << "을(를) 처치했습니다!" << endl;
+    cout << "=== 게임 클리어! ===" << endl;
+}
+ 
+
+void BattleMonster(
+    Player* player,
+    Monster* monster,
+    Inventory<Item>& inventory,
+    int& HPPotion,
+    int& MPPotion)
+{
+    cout << endl << endl
+        << "던전을 탈출하던 중, "
+        << monster->getName()
+        << "이(가) 나타났습니다!" << endl;
     WaitForEnter("Enter를 누르면 전투를 시작합니다.");
 
     while (player->getHP() > 0 && monster->getHP() > 0)
@@ -629,7 +681,7 @@ void BattleRandomMonster(
             player->gainExp(monster->getExpReward());
             player->printPlayerStatus();
             cout << " ->인벤토리에 "<< droppedItem.name<< " 이(가) 저장되었습니다." << endl;
-            WaitForEnter("Enter를 누르면 메인 메뉴로 돌아갑니다.");
+            WaitForEnter("Enter를 누르면 다음 방으로 돌아갑니다.");
             ClearScreen();
             break;
         }
@@ -699,12 +751,15 @@ int main()
 
         switch (choice) {
         case 1:
-            BattleRandomMonster(player, inventory, HPPotion, MPPotion);
+            RunDungeon(player, inventory, HPPotion, MPPotion);
 
-            if (player->getHP() <= 0) {
-                cout << "게임 오버." << endl;
-                isGameRunning = false;
+            if (player->getHP() <= 0)
+            {
+                cout << "게임 오버!" << endl;
+            
             }
+
+            isGameRunning = false;
             break;
 
         case 2:
